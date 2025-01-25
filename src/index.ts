@@ -1,15 +1,17 @@
 import express from "express";
-import userRoutes from "./routes/user.routes";
+import routes from "./routes";
 import dotenv from "dotenv";
 import logger from "./utils/logger";
 import sequelize from "./config/db";
 import { Server } from "http";
+import helmet from "helmet";
+
 dotenv.config();
 const app = express();
 
 app.use(express.json());
-
-app.use("/api/v1", userRoutes);
+app.use(helmet());
+app.use("/", routes);
 
 app.use("*", (req, res) => {
   res.status(404).json({ message: "Route not found" });
