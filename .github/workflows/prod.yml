@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for Development (Staging)
+name: CI/CD Pipeline for Development (Production)
 
 on:
   push:
