@@ -5,16 +5,23 @@ import logger from "./utils/logger";
 import sequelize from "./config/db";
 import { Server } from "http";
 import helmet from "helmet";
+import path from "path";
 
 dotenv.config();
 const app = express();
 
 app.use(express.json());
 app.use(helmet());
+
+app.use("/uploads", express.static(path.join(__dirname, ".", "uploads")));
+
 app.use("/", routes);
 
 app.use("*", (req, res) => {
-  res.status(404).json({ message: "Route not found" });
+  res.status(404).json({
+    status: "fail",
+    message: "Route not found",
+  });
 });
 
 const gracefulShutdown = (server: Server) => () => {
@@ -25,12 +32,11 @@ const gracefulShutdown = (server: Server) => () => {
   });
 };
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT ?? 4000;
 
 const startServer = async () => {
   try {
-    /*await sequelize
-   .sync({ alter: true });*/
+    // await sequelize.sync({ alter: true });
     console.log("Database connected");
 
     const server = app.listen(PORT, () => {

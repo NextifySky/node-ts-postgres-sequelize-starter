@@ -36,7 +36,7 @@ class User
 User.init(
   {
     id: {
-      type: DataTypes.INTEGER.UNSIGNED,
+      type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
@@ -66,10 +66,6 @@ User.init(
       allowNull: true,
     },
     phone: {
-      type: DataTypes.STRING(200),
-      allowNull: true,
-    },
-    address: {
       type: DataTypes.STRING(200),
       allowNull: true,
     },
