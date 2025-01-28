@@ -12,7 +12,8 @@ interface ProductAttributes {
   imageUrl: string;
   isAvailable: boolean;
   rating: number;
-  pdfUrl: string;
+  pdfFile: string;
+  userKey: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,13 +28,14 @@ class Product
   public id!: number;
   public name!: string;
   public description!: string;
-  public pdfUrl!: string;
+  public pdfFile!: string;
   public rating!: number;
   public price!: number;
   public stock!: number;
   public category!: string;
   public imageUrl!: string;
   public isAvailable!: boolean;
+  public userKey!: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -48,6 +50,7 @@ Product.init(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+
       validate: {
         notEmpty: true,
       },
@@ -79,15 +82,28 @@ Product.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-
     rating: {
       type: DataTypes.FLOAT,
       allowNull: true,
       defaultValue: 0,
     },
-    pdfUrl: {
+    pdfFile: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    color: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+    },
+    userKey: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "users",
+        key: "id",
+      },
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
     },
   },
   {
@@ -96,5 +112,8 @@ Product.init(
     timestamps: true, // Handles createdAt and updatedAt
   }
 );
+
+// Define the association after both models are fully loaded
+// Product.belongsTo(User, { foreignKey: "userKey" });
 
 export default Product;

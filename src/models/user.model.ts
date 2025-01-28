@@ -39,6 +39,8 @@ User.init(
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
+      allowNull: false,
+      unique: true,
     },
     role: {
       type: DataTypes.ENUM("mechanic", "customer"),
@@ -69,6 +71,7 @@ User.init(
       type: DataTypes.STRING(200),
       allowNull: true,
     },
+
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -86,5 +89,8 @@ User.init(
     timestamps: true,
   }
 );
+
+// Define the association between User and Product after both are loaded
+// User.hasMany(Product, { foreignKey: "userKey" });
 
 export default User;

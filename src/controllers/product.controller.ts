@@ -4,10 +4,22 @@ import logger from "../utils/logger";
 import path from "path";
 import fs from "fs";
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  userName: string;
+  password: string;
+}
+
+interface CustomRequest extends Request {
+  user?: User;
+}
+
 // Create product
 
 export const createProduct = async (
-  req: Request,
+  req: CustomRequest,
   res: Response
 ): Promise<void> => {
   try {
@@ -36,11 +48,20 @@ export const createProduct = async (
 
     // Construct the URLs for image and PDF
     const imageUrl = `/uploads/${image.filename}`;
-    const pdfUrl = `/uploads/${pdf.filename}`;
+    const pdfFile = `/uploads/${pdf.filename}`;
 
     // Destructure the product data from the request body
-    const { name, description, category, price, stock, isAvailable, rating } =
-      req.body;
+    const {
+      name,
+      description,
+      category,
+      price,
+      stock,
+      isAvailable,
+      rating,
+      color,
+    } = req.body;
+    const userKey = req.user?.id;
 
     // Create the product with the uploaded image and PDF URLs
     const result = await Product.create({
@@ -52,7 +73,9 @@ export const createProduct = async (
       isAvailable,
       imageUrl, // Image URL
       rating,
-      pdfUrl, // PDF URL
+      pdfFile, // PDF URL
+      color,
+      userKey,
     });
 
     // Send response
@@ -69,11 +92,13 @@ export const createProduct = async (
   }
 };
 // Get All Products
-export const getProducts = async (req: Request, res: Response) => {
+export const getProducts = async (req: CustomRequest, res: Response) => {
   try {
+    const userKey = req.user?.id;
     const { page = 1, limit = 10 } = req.query;
     const result = await Product.paginate(Number(page), Number(limit), {
       order: [["id", "DESC"]],
+      where: { userKey },
     });
 
     res.status(200).json({
@@ -92,16 +117,19 @@ export const getProducts = async (req: Request, res: Response) => {
 
 // Get Product by ID
 export const getProductById = async (
-  req: Request,
+  req: CustomRequest,
   res: Response
 ): Promise<void> => {
   try {
     const { id } = req.params;
+    const userKey = req.user?.id;
+
     if (isNaN(Number(id))) {
       res.status(400).json({ message: "Invalid product ID" });
       return;
     }
-    const result = await Product.findByPk(id);
+
+    const result = await Product.findOne({ where: { id, userKey } });
     if (!result) {
       res.status(404).json({ message: "Product not found" });
       return;
@@ -122,16 +150,18 @@ export const getProductById = async (
 
 // Delete Product
 export const deleteProduct = async (
-  req: Request,
+  req: CustomRequest,
   res: Response
 ): Promise<void> => {
   try {
     const { id } = req.params;
+    const userKey = req.user?.id;
     if (!id) {
       res.status(400).json({ message: "Product ID is required" });
       return;
     }
-    const result = await Product.destroy({ where: { id } });
+
+    const result = await Product.destroy({ where: { id, userKey } });
     if (!result) {
       res.status(404).json({ message: "Product not found" });
       return;
@@ -147,14 +177,14 @@ export const deleteProduct = async (
 };
 
 export const UpdateProduct = async (
-  req: Request,
+  req: CustomRequest,
   res: Response
 ): Promise<void> => {
   try {
     const { id } = req.params;
-
+    const userKey = req.user?.id;
     // Find the product by its ID
-    const product = await Product.findOne({ where: { id } });
+    const product = await Product.findOne({ where: { id, userKey } });
     if (!product) {
       res.status(404).json({ message: "Product not found" });
       return;
@@ -175,23 +205,23 @@ export const UpdateProduct = async (
       }
     }
 
-    // If a new PDF is uploaded, update the PDF URL
-    let pdfUrl = product.pdfUrl;
+    // If a new PDF is upload ed, update the PDF URL
+    let pdfFile = product.pdfFile;
     const pdf = (req.files as { [fieldname: string]: Express.Multer.File[] })[
       "pdf"
     ]?.[0];
     if (pdf) {
-      pdfUrl = `/uploads/${pdf.filename}`; // New PDF URL
+      pdfFile = `/uploads/${pdf.filename}`; // New PDF URL
 
       // Optionally, delete the old PDF file if it's being replaced
-      const oldPdfPath = path.join(__dirname, "uploads", product.pdfUrl);
+      const oldPdfPath = path.join(__dirname, "uploads", product.pdfFile);
       if (fs.existsSync(oldPdfPath)) {
         fs.unlinkSync(oldPdfPath); // Delete old PDF
       }
     }
 
     // Update the product with the new image and PDF URLs (if provided) and other fields
-    await product.update({ ...req.body, imageUrl, pdfUrl });
+    await product.update({ ...req.body, imageUrl, pdfFile });
 
     // Fetch the updated product from the database
     const updatedProduct = await Product.findOne({ where: { id } });
