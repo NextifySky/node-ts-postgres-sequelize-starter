@@ -10,6 +10,9 @@ interface UserAttributes {
   role: string;
   password: string;
   phone: string;
+  verificationCode?: string | null;
+  codeExpiration?: Date | null;
+  isVerified?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +32,9 @@ class User
   public password!: string;
   public status!: string;
   public phone!: string;
+  public verificationCode?: string | null;
+  public codeExpiration?: Date | null;
+  public isVerified?: boolean;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -71,12 +77,27 @@ User.init(
       type: DataTypes.STRING(200),
       allowNull: true,
     },
+    verificationCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    codeExpiration: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
 
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+
     updatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
