@@ -13,8 +13,8 @@ const transporter = nodemailer.createTransport({
   secure: true,
 
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: "sahil.kumar@gmail.com",
+    pass: "test@123",
   },
 });
 
@@ -29,7 +29,7 @@ const sendVerificationEmail = async (
 ) => {
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: "sahil.kumar@gmail.com",
       to: email,
       subject: "Email Verification",
       text: `Your verification code is: ${verificationCode}. It will expire in 10 minutes.`,
